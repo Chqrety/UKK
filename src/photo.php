@@ -1,3 +1,7 @@
+<?php
+include('cek_login.php');
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -34,8 +38,8 @@
         ?>
     </header>
     <section class="grid grid-cols-5 px-14 py-5 place-items-center gap-10">
-        <a href="add_photo.php">
-            <article class="border-2 border-secondary/50 border-dashed w-72 h-72 rounded-lg">
+        <a href="add_photo.php" class="h-full">
+            <article class="border-2 border-secondary/50 border-dashed w-72 h-full rounded-lg">
                 <div class="flex flex-col items-center justify-center gap-4 text-secondary/70 h-full">
                     <span class="material-symbols-rounded text-7xl">
                         add_circle
@@ -44,33 +48,62 @@
                 </div>
             </article>
         </a>
-        <?php for ($i = 1; $i <= 21; $i++) : ?>
-            <article class="border border-secondary/50 w-72 h-72 rounded-lg bg-white p-4">
-                <div class="grid grid-cols-1 h-full gap-2">
-                    <div class="row-span-4 place-self-center flex flex-col items-center">
-                        <span class="font-semibold text-lg">Album <?= $i ?></span>
-                        <span class="text-secondary/50">by lorem ipsum</span>
-                    </div>
-                    <div class="justify-self-center place-self-end flex gap-2">
-                        <a href="">
-                            <button class="flex items-center text-yellow-500 gap-1 border border-secondary/70 rounded px-2 py-1">
-                                <span class="material-symbols-outlined">
-                                    edit
-                                </span>
-                                <span class="font-semibold text-sm">Edit</span>
-                            </button>
-                        </a>
-                        <button class="flex items-center text-red-500 gap-1 border border-secondary/70 rounded px-2 py-1">
-                            <span class="material-symbols-outlined">
-                                delete
-                            </span>
-                            <span class="font-semibold text-sm">Delete</span>
-                        </button>
-                    </div>
-                </div>
-            </article>
-        <?php endfor; ?>
+        <?php
+        include('koneksi.php');
+
+        // Ambil data dari database
+        $query = "SELECT user.Username, album.NamaAlbum, foto.LokasiFile, foto.DeskripsiFoto, COUNT(likefoto.LikeID) as jumlah_like, COUNT(komentarfoto.KomentarId) as jumlah_komentar
+        FROM foto
+        INNER JOIN user ON foto.UserId = user.UserId
+        INNER JOIN album ON foto.AlbumId = album.AlbumId
+        LEFT JOIN likefoto ON foto.FotoId = likefoto.FotoId
+        LEFT JOIN komentarfoto ON foto.FotoId = komentarfoto.FotoId
+        GROUP BY foto.FotoId";
+
+
+        $result = $koneksi->query($query);
+
+        // Periksa apakah query berhasil dieksekusi
+        if (!$result) {
+            die("Error: " . $koneksi->error);
+        }
+
+        // Tampilkan data dalam artikel
+        while ($row = $result->fetch_assoc()) {
+            echo '<article class="flex flex-col items-center w-72 cursor-pointer">';
+            echo '<div class="w-full p-2 flex justify-between border-t border-x border-secondary/30 rounded-t-lg">';
+            echo '<span class="font-semibold">' . $row['Username'] . '</span>';
+            echo '<span>' . $row['NamaAlbum'] . '</span>';
+            echo '</div>';
+            echo '<div class="w-fit h-fit overflow-hidden">';
+            echo '<img src="' . $row['LokasiFile'] . '" alt="post" class="w-72 h-72 object-cover object-center">';
+            echo '</div>';
+            echo '<div class="border-b border-x border-secondary/30 rounded-b-lg w-full">';
+            echo '<div class="p-2">';
+            echo '<span class="text-sm">' . $row['DeskripsiFoto'] . '</span>';
+            echo '</div>';
+            echo '<div class="flex gap-x-3 text-sm p-2">';
+            echo '<div class="flex items-center">';
+            echo '<span class="material-symbols-rounded">favorite</span>';
+            echo '<span>' . $row['jumlah_like'] . '</span>';
+            echo '</div>';
+            echo '<div class="flex items-center">';
+            echo '<span class="material-symbols-rounded">chat_bubble</span>';
+            echo '<span>' . $row['jumlah_komentar'] . '</span>';
+            echo '</div>';
+            echo '</div>';
+            echo '</div>';
+            echo '</article>';
+        }
+
+        // Bebaskan hasil query
+        $result->free_result();
+
+        // Tutup koneksi
+        $koneksi->close();
+        ?>
     </section>
+
 </body>
 
 </html>

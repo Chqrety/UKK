@@ -7,7 +7,7 @@ module.exports = {
         'primary': '#222831',
         'secondary': '#393E46',
         'ascent': '#00ADB5',
-        'white': '#EEEEEE',
+        'smoke': '#EEEEEE',
         'ascentBlack': '#008B92',
       },
     },

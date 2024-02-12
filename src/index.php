@@ -1,3 +1,7 @@
+<?php
+include('cek_login.php');
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -34,13 +38,13 @@
         ?>
     </header>
     <section class="grid grid-cols-5 px-14 py-5 gap-5">
-        <article class="flex flex-col items-center w-72 cursor-pointer">
+        <div class="flex flex-col items-center w-full cursor-pointer">
             <div class="w-full p-2 flex justify-between border-t border-x border-secondary/30 rounded-t-lg">
                 <span>asukabhe</span>
                 <span>Album 1</span>
             </div>
-            <div class="w-fit h-fit overflow-hidden">
-                <img src="/img/hand.jpg" alt="post.jpg" class="w-72 h-72 object-cover object-center">
+            <div class="w-full h-fit overflow-hidden">
+                <img src="/img/hand.jpg" alt="post.jpg" class="w-full h-72 object-cover object-center">
             </div>
             <div class="border-b border-x border-secondary/30 rounded-b-lg">
                 <div class="p-2">
@@ -68,7 +72,7 @@
                     </div>
                 </div>
             </div>
-        </article>
+        </div>
     </section>
 </body>
 
