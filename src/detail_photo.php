@@ -1,6 +1,63 @@
 <?php
 include('cek_login.php');
 include('koneksi.php');
+
+if (isset($_GET['id'])) {
+    $photoId = $_GET['id'];
+    $userIdAktif = $_SESSION['UserId'];
+
+    // Query untuk mengambil data foto dari database berdasarkan ID
+    $queryPhoto = "SELECT foto.*, user.UserId, user.Username, album.NamaAlbum, COUNT(DISTINCT likefoto.LikeId) AS JumlahLike, COUNT(DISTINCT komentarfoto.KomentarId) AS JumlahKomentar
+                FROM foto
+                INNER JOIN user ON foto.UserId = user.UserId
+                INNER JOIN album ON foto.AlbumId = album.AlbumId
+                LEFT JOIN likefoto ON foto.FotoId = likefoto.FotoId
+                LEFT JOIN komentarfoto ON foto.FotoId = komentarfoto.FotoId
+                WHERE foto.FotoId = $photoId
+                GROUP BY foto.FotoId";
+    $resultPhoto = $koneksi->query($queryPhoto);
+
+    // Cek apakah query foto berhasil dijalankan
+    if ($resultPhoto) {
+        $rowPhoto = $resultPhoto->fetch_assoc();
+        $userId = $rowPhoto['UserId'];
+        $username = $rowPhoto['Username'];
+        $namaAlbum = $rowPhoto['NamaAlbum'];
+        $photoId = $rowPhoto['FotoId'];
+        $judulPhoto = $rowPhoto['JudulFoto'];
+        $deskripsiPhoto = $rowPhoto['DeskripsiFoto'];
+        $lokasiPhoto = $rowPhoto['LokasiFile'];
+        $jumlahLike = $rowPhoto['JumlahLike'];
+        $jumlahKomentar = $rowPhoto['JumlahKomentar'];
+        // ...
+
+        // Rilis hasil query foto
+        $resultPhoto->free();
+    } else {
+        echo "Error: " . $queryPhoto . "<br>" . $koneksi->error;
+    }
+
+    // mengambil data komentar
+    $queryKomentar = "SELECT user.Username, komentarfoto.IsiKomentar, COUNT(DISTINCT komentarfoto.KomentarId) AS JumlahKomentar
+                FROM komentarfoto
+                LEFT JOIN user ON komentarfoto.UserId = user.UserId
+                WHERE komentarfoto.FotoId = $photoId
+                GROUP BY komentarfoto.KomentarId";
+    $resultKomentar = $koneksi->query($queryKomentar);
+
+    // menmeriksa apakah user yang login sudah like
+    $checkLikeQuery = "SELECT * FROM likefoto WHERE FotoId = $photoId AND UserId = $userId";
+    $resultCheckLike = mysqli_query($koneksi, $checkLikeQuery);
+    $userAlreadyLiked = mysqli_num_rows($resultCheckLike) > 0;
+    mysqli_free_result($resultCheckLike);
+} else {
+    echo "Foto tidak ditemukan";
+}
+
+$action = $userIdAktif === $userId ? 'flex' : 'hidden';
+
+// Tutup koneksi ke database
+$koneksi->close();
 ?>
 
 <!DOCTYPE html>
@@ -8,7 +65,6 @@ include('koneksi.php');
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content=""> <!-- Mengatur refresh setiap 5 detik -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E - Gallery</title>
 
@@ -35,70 +91,12 @@ include('koneksi.php');
 <body>
     <header>
         <?php
-        $currentPage = 'photo';
         include('navbar.php');
         ?>
     </header>
     <section class="mx-14 my-5">
 
         <div class="flex h-[85vh]">
-            <?php
-            if (isset($_GET['id'])) {
-                $photoId = $_GET['id'];
-                $userId = $_SESSION['UserId'];
-
-
-                // Query untuk mengambil data album dari database berdasarkan ID
-                // $queryPhoto = " SELECT * 
-                $queryPhoto = "SELECT foto.*, user.Username, album.NamaAlbum, COUNT(DISTINCT likefoto.LikeId) AS JumlahLike, COUNT(DISTINCT komentarfoto.KomentarId) AS JumlahKomentar
-                            FROM foto
-                            INNER JOIN user ON foto.UserId = user.UserId
-                            INNER JOIN album ON foto.AlbumId = album.AlbumId
-                            LEFT JOIN likefoto ON foto.FotoId = likefoto.FotoId
-                            LEFT JOIN komentarfoto ON foto.FotoId = komentarfoto.FotoId
-                            WHERE foto.FotoId = $photoId
-                            GROUP BY foto.FotoId";
-                $resultPhoto = $koneksi->query($queryPhoto);
-
-                // Cek apakah query album berhasil dijalankan
-                if ($resultPhoto) {
-                    $rowPhoto = $resultPhoto->fetch_assoc();
-                    $username = $rowPhoto['Username'];
-                    $namaAlbum = $rowPhoto['NamaAlbum'];
-                    $photoId = $rowPhoto['FotoId'];
-                    $judulPhoto = $rowPhoto['JudulFoto'];
-                    $deskripsiPhoto = $rowPhoto['DeskripsiFoto'];
-                    $lokasiPhoto = $rowPhoto['LokasiFile'];
-                    $jumlahLike = $rowPhoto['JumlahLike'];
-                    $jumlahKomentar = $rowPhoto['JumlahKomentar'];
-                    // ...
-
-                    // Rilis hasil query album
-                    $resultPhoto->free();
-                } else {
-                    echo "Error: " . $queryPhoto . "<br>" . $koneksi->error;
-                }
-
-                $queryKomentar = "SELECT user.Username, komentarfoto.IsiKomentar, COUNT(DISTINCT komentarfoto.KomentarId) AS JumlahKomentar
-                            FROM komentarfoto
-                            LEFT JOIN user ON komentarfoto.UserId = user.UserId
-                            WHERE komentarfoto.FotoId = $photoId
-                            GROUP BY komentarfoto.KomentarId";
-                $resultKomentar = $koneksi->query($queryKomentar);
-            } else {
-                echo "Foto tidak ditemukan";
-            }
-
-            $checkLikeQuery = "SELECT * FROM likefoto WHERE FotoId = $photoId AND UserId = $userId";
-            $resultCheckLike = mysqli_query($koneksi, $checkLikeQuery);
-
-            $userAlreadyLiked = mysqli_num_rows($resultCheckLike) > 0;
-            $symbol =
-                mysqli_free_result($resultCheckLike);
-
-            // Tutup koneksi ke database
-            $koneksi->close();
-            ?>
             <div class="basis-1/2 px-10">
                 <div class="flex flex-col justify-center items-center w-full h-full">
                     <div class=" w-[45vh] relative">
@@ -107,12 +105,12 @@ include('koneksi.php');
                         </div>
                     </div>
                     <div>
-                        <div class="flex gap-2 mt-2">
+                        <div class="<?php echo $action ?> gap-2 mt-2">
                             <a href="edit_photo.php?id=<?= $photoId ?>" class="flex items-center text-yellow-500 gap-1 border border-yellow-500/50 rounded px-2 py-1 transition-all hover:bg-yellow-500 hover:text-white hover:scale-110">
                                 <span class="material-symbols-outlined">edit</span>
                                 <span class="font-semibold text-sm">Edit</span>
                             </a>
-                            <a href="proses_hapus_album.php?id=<?= $photoId ?>" class="flex items-center text-red-500 gap-1 border border-red-500/50 rounded px-2 py-1 transition-all hover:bg-red-500 hover:text-white hover:scale-110">
+                            <a href="proses_hapus_photo.php?id=<?= $photoId ?>" class="flex items-center text-red-500 gap-1 border border-red-500/50 rounded px-2 py-1 transition-all hover:bg-red-500 hover:text-white hover:scale-110">
                                 <span class="material-symbols-outlined">delete</span>
                                 <span class="font-semibold text-sm">Delete</span>
                             </a>

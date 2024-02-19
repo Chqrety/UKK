@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // Redirect kembali ke halaman foto yang sedang dilihat
-header("Location: detail_photo.php?id=" . $fotoId);
+header("Location: " . $_SERVER['HTTP_REFERER']);
 exit();
 
 // Tutup koneksi database

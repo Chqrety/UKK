@@ -64,7 +64,7 @@ include('cek_login.php');
                     <div class="flex flex-col max-w-xl">
                         <label class="font-semibold pb-1">Album</label>
                         <select name="AlbumId" class="bg-secondary/10 w-full rounded-lg px-3 py-3" required>
-                            <option disabled selected class="">pilih Album</option>
+                            <option selected value="NULL">pilih album</option>
                             <?php
                             // Loop melalui hasil query dan buat opsi untuk setiap entri album
                             while ($row = $resultAlbum->fetch_assoc()) {

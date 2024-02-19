@@ -1,5 +1,20 @@
 <?php
 include('cek_login.php');
+
+include('koneksi.php');
+
+$userId = $_SESSION['UserId'];
+
+// Ambil data semua foto dari database
+$queryPhoto = "SELECT user.Username, foto.*, album.NamaAlbum, COUNT(DISTINCT likefoto.LikeId) AS JumlahLike, COUNT(DISTINCT komentarfoto.KomentarId) AS JumlahKomentar
+FROM foto
+INNER JOIN user ON foto.UserId = user.UserId
+INNER JOIN album ON foto.AlbumId = album.AlbumId
+LEFT JOIN likefoto ON foto.FotoId = likefoto.FotoId
+LEFT JOIN komentarfoto ON foto.FotoId = komentarfoto.FotoId
+GROUP BY foto.FotoId";
+
+$resultPhoto = $koneksi->query($queryPhoto);
 ?>
 
 <!DOCTYPE html>
@@ -38,29 +53,50 @@ include('cek_login.php');
         ?>
     </header>
     <section class="columns-5 px-14 py-5 gap-5">
-        <?php for ($i = 1; $i <= 30; $i++) : ?>
-            <div class="break-inside-avoid flex flex-col items-center w-full mb-5 transition-all hover:scale-105 hover:shadow-xl shadow-black">
+        <?php foreach ($resultPhoto as $row) :
+
+            $photoId = $row['FotoId'];
+            // menmeriksa apakah user yang login sudah like
+            $checkLikeQuery = "SELECT * FROM likefoto WHERE FotoId = $photoId AND UserId = $userId";
+            $resultCheckLike = mysqli_query($koneksi, $checkLikeQuery);
+            $userAlreadyLiked = mysqli_num_rows($resultCheckLike) > 0;
+            mysqli_free_result($resultCheckLike);
+
+        ?>
+            <div class="break-inside-avoid flex flex-col items-center w-full mb-5 transition-all hover:scale-105 hover:rounded-lg hover:shadow-xl">
                 <div class="w-full p-2 flex justify-between border-t border-x border-secondary/30 rounded-t-lg">
-                    <span class="font-bold">asukabhe</span>
-                    <span class="italic">Album <?= $i ?></span>
+                    <span class="font-bold"><?= $row['Username'] ?></span>
+                    <span class="italic"><?= $row['NamaAlbum'] ?></span>
                 </div>
                 <div class="overflow-hidden">
-                    <img src="https://source.unsplash.com/random/?<?= $i ?>" alt="random unsplash image" class="w-full h-full object-cover object-center cursor-pointer">
+                    <img onclick="window.location.href='detail_photo.php?id=<?= $row['FotoId'] ?>'" src="<?= $row['LokasiFile'] ?>" alt="random unsplash image" class="w-full h-full object-cover object-center cursor-pointer">
                 </div>
                 <div class="border-b border-x border-secondary/30 rounded-b-lg w-full">
                     <div class="flex gap-x-3 text-sm p-2">
                         <div class="flex items-center">
-                            <span class="material-symbols-rounded">favorite</span>
-                            <span>12</span>
+                            <form method="post" action="proses_like.php?id=<?= $photoId ?>">
+                                <button type="submit" class="flex items-center">
+                                    <span class="<?php echo $userAlreadyLiked ? 'material-symbols-outlined text-red-500' : 'material-symbols-rounded'; ?>">favorite</span>
+                                </button>
+                            </form>
+                            <span class="font-semibold"><?= $row['JumlahLike'] ?></span>
                         </div>
                         <div class="flex items-center">
                             <span class="material-symbols-rounded">chat_bubble</span>
-                            <span>13</span>
+                            <span class="font-semibold"><?= $row['JumlahKomentar'] ?></span>
                         </div>
                     </div>
                 </div>
             </div>
-        <?php endfor; ?>
+        <?php endforeach; ?>
+
+        <?php
+        // Bebaskan hasil query
+        $resultPhoto->free();
+
+        // Tutup koneksi
+        $koneksi->close();
+        ?>
     </section>
 </body>
 

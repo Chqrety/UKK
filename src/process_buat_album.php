@@ -1,6 +1,8 @@
 <?php
 include('koneksi.php');
 
+session_start();
+
 // Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Retrieve and sanitize form data
@@ -13,8 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Assuming you have a user authentication system and user is logged in
         // Replace this with the actual user ID retrieval method based on your system
-        // $userId = $_SESSION['UserId']; // Adjust this based on your authentication system
-        $userId = 1; // Adjust this based on your authentication system
+        $userId = $_SESSION['UserId']; // Adjust this based on your authentication system
 
         // Get today's date
         $todayDate = date("Y-m-d");

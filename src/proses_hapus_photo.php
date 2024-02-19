@@ -8,7 +8,7 @@ if (isset($_GET['id'])) {
     $photoId = $_GET['id'];
 
     // Query untuk menghapus album berdasarkan AlbumId
-    $queryDeletePhoto = "DELETE FROM foto WHERE PhotoId = $photoId";
+    $queryDeletePhoto = "DELETE FROM foto WHERE FotoId = $photoId";
 
     // Jalankan query dan periksa keberhasilannya
     if ($koneksi->query($queryDeletePhoto)) {
