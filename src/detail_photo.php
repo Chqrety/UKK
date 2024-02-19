@@ -1,6 +1,5 @@
 <?php
 include('cek_login.php');
-
 include('koneksi.php');
 ?>
 
@@ -46,6 +45,8 @@ include('koneksi.php');
             <?php
             if (isset($_GET['id'])) {
                 $photoId = $_GET['id'];
+                $userId = $_SESSION['UserId'];
+
 
                 // Query untuk mengambil data album dari database berdasarkan ID
                 // $queryPhoto = " SELECT * 
@@ -84,23 +85,16 @@ include('koneksi.php');
                             WHERE komentarfoto.FotoId = $photoId
                             GROUP BY komentarfoto.KomentarId";
                 $resultKomentar = $koneksi->query($queryKomentar);
-
-                // Cek apakah query komentar berhasil dijalankan
-                // if ($resultKomentar) {
-                //     $rowKomentar = $resultKomentar->fetch_assoc();
-                //     $jumlahKomentar = $rowKomentar['JumlahKomentar'];
-                //     $usernameKomentar = $rowKomentar['Username'];
-                //     $isiKomentar = $rowKomentar['IsiKomentar'];
-                //     // ...
-
-                //     // Rilis hasil query album
-                //     $resultKomentar->free();
-                // } else {
-                //     echo "Error: " . $queryKomentar . "<br>" . $koneksi->error;
-                // }
             } else {
                 echo "Foto tidak ditemukan";
             }
+
+            $checkLikeQuery = "SELECT * FROM likefoto WHERE FotoId = $photoId AND UserId = $userId";
+            $resultCheckLike = mysqli_query($koneksi, $checkLikeQuery);
+
+            $userAlreadyLiked = mysqli_num_rows($resultCheckLike) > 0;
+            $symbol =
+                mysqli_free_result($resultCheckLike);
 
             // Tutup koneksi ke database
             $koneksi->close();
@@ -109,8 +103,6 @@ include('koneksi.php');
                 <div class="flex flex-col justify-center items-center w-full h-full">
                     <div class=" w-[45vh] relative">
                         <div class="flex flex-col items-center justify-center gap-4 text-secondary/70 w-full h-full">
-                            <!-- <img src="/img/duck.jpg" alt=""> -->
-                            <!-- <img src="https://source.unsplash.com/random/?" alt="post" class="h-full object-cover object-center"> -->
                             <img src="<?= $lokasiPhoto ?>" alt="post" class="h-full object-cover object-center">
                         </div>
                     </div>
@@ -141,8 +133,6 @@ include('koneksi.php');
                         foreach ($resultKomentar as $rowKomentar) {
                             $usernameKomentar = $rowKomentar['Username'];
                             $isiKomentar = $rowKomentar['IsiKomentar'];
-
-                            // Tampilkan informasi komentar dalam HTML
                     ?>
                             <div class="flex flex-col bg-secondary/10 rounded w-fit px-2 py-2">
                                 <span class="font-semibold"><?= $usernameKomentar ?></span>
@@ -159,29 +149,28 @@ include('koneksi.php');
                     }
                     ?>
                 </div>
+                <span></span>
                 <div class="border-b border-x border-secondary/30 rounded-b-lg w-full">
                     <div class="flex items-center gap-x-3 text-sm p-2 w-full">
-                        <div class="flex items-center">
+                        <div class="flex items-center gap-1">
                             <form method="post" action="proses_like.php?id=<?= $photoId ?>">
                                 <button type="submit" class="flex items-center">
-                                    <span class="material-symbols-rounded">favorite</span>
+                                    <span class="<?php echo $userAlreadyLiked ? 'material-symbols-outlined text-red-500' : 'material-symbols-rounded'; ?>">favorite</span>
                                 </button>
                             </form>
-                            <span><?= $jumlahLike ?></span>
+                            <span class="font-semibold"><?= $jumlahLike ?></span>
                         </div>
-                        <div class="flex items-center">
+                        <div class="flex items-center gap-1">
                             <span class="material-symbols-rounded">chat_bubble</span>
-                            <span><?= $jumlahKomentar ?></span>
+                            <span class="font-semibold"><?= $jumlahKomentar ?></span>
                         </div>
                         <form method="post" action="proses_komen.php?id=<?= $photoId ?>" class="w-full">
-                            <div class="flex items-center">
+                            <div class="flex items-center gap-1">
                                 <div class="w-full">
                                     <input type="text" name="IsiKomentar" placeholder="masukkan komentar" class="border border-secondary/50 rounded-lg w-full p-2 focus:outline-none">
                                 </div>
                                 <button type="submit" class="flex items-center">
-                                    <span class="material-symbols-rounded">
-                                        send
-                                    </span>
+                                    <span class="material-symbols-rounded">send</span>
                                 </button>
                             </div>
                         </form>
