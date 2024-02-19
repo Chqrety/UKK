@@ -39,58 +39,79 @@ include('cek_login.php');
         // Pastikan Anda sudah memasukkan informasi koneksi.php di sini
         include "koneksi.php";
 
-        // Mulai atau resume sesi
-        // session_start();
-
         // Query untuk mengambil data album dari database
         $queryAlbum = "SELECT AlbumId, NamaAlbum FROM album";
         $resultAlbum = $koneksi->query($queryAlbum);
+
+        // Periksa apakah ID album telah diberikan pada parameter URL
+        if (isset($_GET['id'])) {
+            $photoId = $_GET['id'];
+
+            // Query untuk mengambil data album dari database berdasarkan ID
+            $queryPhoto = "SELECT * FROM foto WHERE FotoId = $photoId";
+            $resultPhoto = $koneksi->query($queryPhoto);
+
+            // Cek apakah query album berhasil dijalankan
+            if ($resultPhoto) {
+                $rowPhoto = $resultPhoto->fetch_assoc();
+                $idPhoto = $rowPhoto['FotoId'];
+                $judulPhoto = $rowPhoto['JudulFoto'];
+                $albumLama = $rowPhoto['AlbumId'];
+                $deskripsiPhoto = $rowPhoto['DeskripsiFoto'];
+                $lokasiFile = $rowPhoto['LokasiFile'];
+                // ...
+
+                // Rilis hasil query album
+                $resultPhoto->free();
+            } else {
+                echo "Error: " . $queryAlbum . "<br>" . $koneksi->error;
+            }
+        } else {
+            echo "Foto tidak ditemukan.";
+        }
 
         // Tutup koneksi (jika menggunakan mysqli)
         $koneksi->close();
         ?>
     </header>
-    <section class="px-56 py-10">
+    <section class="mx-56 my-10">
         <div class="mb-20">
-            <span class="font-bold text-2xl">Upload Foto</span>
+            <span class="font-bold text-2xl">Edit Foto</span>
         </div>
-        <form method="POST" action="proses_upload_photo.php" enctype="multipart/form-data">
+        <form method="POST" action="proses_edit_photo.php" enctype="multipart/form-data">
+            <input type="text" hidden name="IdFoto" value="<?php echo htmlspecialchars($idPhoto) ?>">
             <div class="flex mb-5">
                 <div class="basis-1/2 flex flex-col gap-y-3">
                     <div class="flex flex-col max-w-xl">
                         <label class="font-semibold pb-1">Judul Foto</label>
-                        <input type="text" placeholder="masukkan judul foto" name="JudulFoto" class="bg-secondary/10 w-full rounded-lg px-3 py-3" required>
+                        <input type="text" placeholder="masukkan judul foto" name="JudulFoto" value="<?php echo htmlspecialchars($judulPhoto); ?>" class="bg-secondary/10 w-full rounded-lg px-3 py-3" required>
                     </div>
                     <div class="flex flex-col max-w-xl">
                         <label class="font-semibold pb-1">Album</label>
                         <select name="AlbumId" class="bg-secondary/10 w-full rounded-lg px-3 py-3" required>
-                            <option disabled selected class="">pilih Album</option>
+                            <option disabled selected>pilih album</option>
                             <?php
                             // Loop melalui hasil query dan buat opsi untuk setiap entri album
                             while ($row = $resultAlbum->fetch_assoc()) {
                                 $albumId = $row['AlbumId'];
                                 $namaAlbum = $row['NamaAlbum'];
-                                echo "<option value=\"$albumId\">$namaAlbum</option>";
+                                $selected = ($albumId = $albumLama) ? 'selected' : '';
+                                echo "<option value=\"$albumId\" $selected>$namaAlbum</option>";
                             }
                             ?>
                         </select>
                     </div>
                     <div class="flex flex-col max-w-xl">
                         <label class="font-semibold pb-1">Deskripsi Foto</label>
-                        <textarea placeholder="masukkan deskripsi foto" name="DeskripsiFoto" class="bg-secondary/10 w-full px-3 py-5 rounded-lg" required></textarea>
+                        <textarea placeholder="masukkan deskripsi foto" name="DeskripsiFoto" class="bg-secondary/10 w-full px-3 py-5 rounded-lg" required><?php echo htmlspecialchars($deskripsiPhoto) ?></textarea>
                     </div>
                 </div>
                 <div class="basis-1/2">
                     <div class="flex justify-center items-center w-full h-full">
-                        <div class="border-2 border-secondary/50 border-dashed rounded-lg cursor-pointer w-full h-96 relative">
+                        <div class="border-2 border-secondary/50 border-dashed rounded-lg w-full h-96 relative">
                             <div id="previewContainer" class="flex flex-col items-center justify-center gap-4 text-secondary/70 w-full h-full">
-                                <span class="material-symbols-rounded text-7xl">
-                                    info
-                                </span>
-                                <span class="font-semibold">Preview Image</span>
+                                <img src="<?php echo $lokasiFile ?>" alt="" class="h-full">
                             </div>
-                            <label for="fileInput" class="text-xs text-secondary/50">Tekan kotak diatas untuk memasukkan atau mengganti foto</label>
-                            <input type="file" id="fileInput" name="Foto" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" onchange="handleFileSelect()" required>
                         </div>
                     </div>
                 </div>
@@ -102,36 +123,15 @@ include('cek_login.php');
                     </span>
                     <span class="font-semibold">Kembali</span>
                 </button>
-                <button type="submit" class="flex items-center bg-ascentBlack py-2 px-6 text-white rounded gap-2 transition-all hover:scale-105">
-                    <span class="font-semibold">Upload</span>
+                <button type="submit" class="flex items-center bg-yellow-500 py-2 px-6 text-white rounded gap-2 transition-all hover:scale-105">
+                    <span class="font-semibold">Edit</span>
                     <span class="material-symbols-outlined">
-                        add_photo_alternate
+                        edit
                     </span>
                 </button>
             </div>
         </form>
     </section>
-
-    <script>
-        function handleFileSelect() {
-            const fileInput = document.getElementById('fileInput');
-            const previewContainer = document.getElementById('previewContainer');
-            const selectedFile = fileInput.files[0];
-
-            if (selectedFile) {
-                const reader = new FileReader();
-
-                reader.onload = function(e) {
-                    // Tampilkan gambar sebagai preview
-                    previewContainer.innerHTML = `
-                    <img src="${e.target.result}" alt="preview" class="h-full rounded-lg">
-                `;
-                };
-
-                reader.readAsDataURL(selectedFile);
-            }
-        }
-    </script>
 </body>
 
 </html>

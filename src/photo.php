@@ -1,5 +1,25 @@
 <?php
+// cek login
 include('cek_login.php');
+
+// view photo
+include('koneksi.php');
+
+// Ambil data dari database
+$query = "SELECT *
+FROM foto
+INNER JOIN user ON foto.UserId = user.UserId
+INNER JOIN album ON foto.AlbumId = album.AlbumId
+-- LEFT JOIN likefoto ON foto.FotoId = likefoto.FotoId
+-- LEFT JOIN komentarfoto ON foto.FotoId = komentarfoto.FotoId
+GROUP BY foto.FotoId";
+
+$result = $koneksi->query($query);
+
+// Periksa apakah query berhasil dieksekusi
+if (!$result) {
+    die("Error: " . $koneksi->error);
+}
 ?>
 
 <!DOCTYPE html>
@@ -53,31 +73,43 @@ include('cek_login.php');
     </section>
 
     <section class="columns-5 px-14 py-5 gap-5">
-        <?php for ($i = 1; $i <= 15; $i++) : ?>
-            <div class="break-inside-avoid flex flex-col items-center w-full mb-5 transition-all hover:scale-105 hover:shadow-xl shadow-black">
+        <?php while ($row = $result->fetch_assoc()) : ?>
+            <div onclick="window.location.href='detail_photo.php?id=<?= $row['FotoId'] ?>'" class="break-inside-avoid flex flex-col items-center w-full mb-5 transition-all hover:scale-105 hover:shadow-xl hover:rounded-lg">
+                <!-- <span><?= $row['FotoId'] ?></span> -->
                 <div class="w-full p-2 flex justify-between border-t border-x border-secondary/30 rounded-t-lg">
-                    <span class="font-bold">asukabhe</span>
-                    <span class="italic">Album <?= $i ?></span>
+                    <span class="font-bold"><?= $row['Username'] ?></span>
+                    <span class="italic"><?= $row['NamaAlbum'] ?></span>
                 </div>
                 <div class="overflow-hidden">
-                    <img src="https://source.unsplash.com/random/?<?= $i ?>" alt="random unsplash image" class="w-full h-full object-cover object-center cursor-pointer">
+                    <img src="<?= $row['LokasiFile'] ?>" alt="random unsplash image" class="w-full h-full object-cover object-center cursor-pointer">
                 </div>
                 <div class="border-b border-x border-secondary/30 rounded-b-lg w-full">
                     <div class="flex gap-x-3 text-sm p-2">
                         <div class="flex items-center">
                             <span class="material-symbols-rounded">favorite</span>
-                            <span>12</span>
+                            <span>0</span>
                         </div>
                         <div class="flex items-center">
                             <span class="material-symbols-rounded">chat_bubble</span>
-                            <span>13</span>
+                            <span>0</span>
                         </div>
                     </div>
                 </div>
             </div>
-        <?php endfor; ?>
+        <?php endwhile; ?>
+
+        <?php
+        // Bebaskan hasil query
+        $result->free();
+
+        // Tutup koneksi
+        $koneksi->close();
+        ?>
+
     </section>
 
 </body>
 
 </html>
+<?php for ($i = 1; $i <= 15; $i++) : ?>
+<?php endfor; ?>

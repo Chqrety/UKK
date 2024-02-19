@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($koneksi->query($sql) === TRUE) {
             // Menampilkan alert dengan JavaScript
-            echo '<script>alert("Data berhasil ditambahkan!");</script>';
+            echo '<script>alert("Album berhasil dibuat");</script>';
             // Mengarahkan ke album.php setelah menampilkan alert
             echo '<script>window.location.href = "album.php";</script>';
             exit(); // Pastikan untuk menghentikan eksekusi skrip setelah melakukan redirect

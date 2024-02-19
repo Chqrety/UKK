@@ -38,7 +38,7 @@ include('cek_login.php');
         ?>
     </header>
     <section class="grid grid-cols-5 px-14 py-5 place-items-center gap-10">
-        <a href="create_album.php">
+        <a href="buat_album.php">
             <article class="border-2 border-secondary/50 border-dashed w-72 h-72 rounded-lg">
                 <div class="flex flex-col items-center justify-center gap-4 text-secondary/70 h-full">
                     <span class="material-symbols-rounded text-7xl">
@@ -52,7 +52,10 @@ include('cek_login.php');
         include('koneksi.php');
 
         // Query untuk mengambil data album dari database
-        $query = "SELECT album.*, user.Username FROM album INNER JOIN user ON album.UserId = user.UserId";
+        $query = "SELECT album.*, user.Username 
+        FROM album 
+        INNER JOIN user 
+        ON album.UserId = user.UserId";
         $result = $koneksi->query($query);
 
         // Cek apakah query berhasil dijalankan
@@ -64,18 +67,20 @@ include('cek_login.php');
                 $description = $row['Deskripsi'];
                 $userId = $row['UserId'];
                 $userName = $row['Username'];
+        ?>
 
-                // Tautan ke halaman detail_album.php dengan parameter query string
-                echo '<a href="detail_album.php?id=' . $albumId . '">';
-                echo '<article class="border border-secondary/50 w-72 h-72 rounded-lg bg-white p-4">';
-                echo '<div class="grid grid-cols-1 place-items-center h-full gap-2">';
-                echo '<div class="flex flex-col items-center">';
-                echo '<span class="font-semibold text-lg">Album: ' . $albumName . '</span>';
-                echo '<span class="text-secondary/50">by User: ' . $userName . '</span>';
-                echo '</div>';
-                echo '</div>';
-                echo '</article>';
-                echo '</a>';
+                <a href="detail_album.php?id=<?php echo $albumId; ?>">
+                    <article class="border border-secondary/50 w-72 h-72 rounded-lg bg-white p-4">
+                        <div class="grid grid-cols-1 place-items-center h-full gap-2">
+                            <div class="flex flex-col items-center">
+                                <span class="font-semibold text-lg">Album: <?php echo $albumName; ?></span>
+                                <span class="text-secondary/50">by User: <?php echo $userName; ?></span>
+                            </div>
+                        </div>
+                    </article>
+                </a>
+
+        <?php
             }
 
             // Bebaskan hasil query

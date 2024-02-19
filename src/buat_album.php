@@ -44,11 +44,11 @@ include('cek_login.php');
         <form method="POST" action="process_buat_album.php">
             <div class="max-w-xl mb-5">
                 <label class="font-semibold">Nama Album</label>
-                <input type="text" placeholder="masukkan nama album disini" name="NamaAlbum" class="border-2 border-secondary/50 w-full rounded-lg py-1 px-2" required>
+                <input type="text" placeholder="masukkan nama album" name="NamaAlbum" class="bg-secondary/10 w-full rounded-lg px-3 py-3" required>
             </div>
             <div class="max-w-xl mb-20">
                 <label for="deskripsi" class="font-semibold">Deskripsi</label>
-                <textarea name="Deskripsi" id="deskripsi" cols="30" rows="10" class="border-2 border-secondary/50 w-full rounded-lg py-1 px-2" required></textarea>
+                <textarea name="Deskripsi" id="deskripsi" placeholder="masukkan deskripsi album" cols="30" rows="10" class="bg-secondary/10 w-full rounded-lg px-3 py-3" required></textarea>
             </div>
 
             <div class="flex justify-between">

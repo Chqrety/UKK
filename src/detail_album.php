@@ -1,5 +1,6 @@
 <?php
 include('cek_login.php');
+include('koneksi.php');
 ?>
 
 <!DOCTYPE html>
@@ -39,8 +40,6 @@ include('cek_login.php');
     </header>
     <section class="px-14 py-5">
         <?php
-        include('koneksi.php');
-
         // Mendapatkan id album dari parameter query string
         if (isset($_GET['id'])) {
             $albumId = $_GET['id'];
